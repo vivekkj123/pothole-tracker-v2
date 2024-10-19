@@ -1,11 +1,29 @@
+import  { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../utils/firebase';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LoginPage = () => {
-  const handleSubmit = (e) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add login logic here
+    setError(null);
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // If successful, navigate to the dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   return (
@@ -20,17 +38,19 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
-                htmlFor="username"
+                htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
               >
-                Username
+                Email
               </label>
               <Input
-                id="username"
-                type="text"
-                placeholder="Enter your username"
+                id="email"
+                type="email"
+                placeholder="Enter your email"
                 className="mt-1 block w-full"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
@@ -46,8 +66,15 @@ const LoginPage = () => {
                 placeholder="Enter your password"
                 className="mt-1 block w-full"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             <Button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"

@@ -24,10 +24,10 @@ const PotholeMap = () => {
   };
 
   return (
-    <div className="w-full h-[600px] relative">
+    <div className="w-full h-full relative">
       <MapContainer
         center={[10.8505, 76.2711]}
-        zoom={9}
+        zoom={30}
         className="h-full w-full" // Ensures the map occupies the full size of its container
         zoomControl={false}
       >
