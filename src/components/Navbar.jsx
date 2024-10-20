@@ -1,14 +1,16 @@
 import { signOut } from "firebase/auth";
 import { Menu, X } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../utils/firebase";
+import ReportPotholeModal from "./ReportPotholeModal";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [user] = useAuthState(auth);
   const navigate = useNavigate();
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -40,7 +42,11 @@ const Navbar = () => {
           </div>
 
           <nav className="hidden md:flex items-center space-x-4">
-            <NavLinks user={user} handleSignOut={handleSignOut} />
+            <NavLinks
+              user={user}
+              handleSignOut={handleSignOut}
+              openReportModal={() => setIsReportModalOpen(true)}
+            />
           </nav>
 
           <div className="md:hidden">
@@ -55,19 +61,39 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden mt-4">
           <nav className="flex flex-col space-y-4">
-            <NavLinks user={user} handleSignOut={handleSignOut} mobile />
+            <NavLinks
+              user={user}
+              handleSignOut={handleSignOut}
+              openReportModal={() => setIsReportModalOpen(true)}
+              mobile
+            />
           </nav>
         </div>
       )}
+
+      <ReportPotholeModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+      />
     </header>
   );
 };
 
-const NavLinks = ({ user, handleSignOut, mobile = false }) => (
+const NavLinks = ({ user, handleSignOut, openReportModal, mobile = false }) => (
   <>
-    <Link to="/" className={`text-blue-600 ${mobile ? "block" : ""}`}>
-      Home
-    </Link>
+    {user ? (
+      <Link
+        to="/dashboard"
+        className={`text-blue-600 ${mobile ? "block" : ""}`}
+      >
+        Dashboard
+      </Link>
+    ) : (
+      <Link to="/" className={`text-blue-600 ${mobile ? "block" : ""}`}>
+        Home
+      </Link>
+    )}
+
     <Link to="/review" className={`text-blue-600 ${mobile ? "block" : ""}`}>
       Review
     </Link>
@@ -89,14 +115,14 @@ const NavLinks = ({ user, handleSignOut, mobile = false }) => (
         <Link to="/login" className={`text-blue-600 ${mobile ? "block" : ""}`}>
           Govt. Login
         </Link>
-        <Link
-          to="/report"
+        <button
+          onClick={openReportModal}
           className={`text-white px-8 py-2 rounded-full bg-blue-600 ${
             mobile ? "inline-block mt-2" : ""
           }`}
         >
           Report a Pothole
-        </Link>
+        </button>
       </>
     )}
   </>

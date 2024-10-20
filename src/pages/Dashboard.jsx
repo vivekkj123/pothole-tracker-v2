@@ -1,12 +1,53 @@
+import React, { useEffect, useState } from "react";
+import { collection, onSnapshot, query } from "firebase/firestore";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Navbar from "../components/Navbar";
 import PotholeMap from "../components/PotholeMap";
 import RiskMeter from "../components/RiskMeter";
 import StatusChart from "../components/StatusChart";
+import { firestore } from "../utils/firebase";
 
 const Dashboard = () => {
-  const statusData = [20, 50, 30];
-  const riskData = { high: 35, medium: 50, low: 15 };
+  const [statusData, setStatusData] = useState([0, 0, 0]); // [Under Review, In Progress, Resolved]
+  const [riskData, setRiskData] = useState({ high: 0, medium: 0, low: 0 });
+  const [totalPotholes, setTotalPotholes] = useState(0);
+
+  useEffect(() => {
+    const q = query(collection(firestore, "potholes"));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const potholeData = querySnapshot.docs.map((doc) => doc.data());
+
+      const statusCounts = { underReview: 0, inProgress: 0, resolved: 0 };
+      const riskCounts = { high: 0, medium: 0, low: 0 };
+
+      potholeData.forEach((pothole) => {
+        // Count statuses
+        if (pothole.status === "Under Review") {
+          statusCounts.underReview++;
+        } else if (pothole.status === "In Progress") {
+          statusCounts.inProgress++;
+        } else if (pothole.status === "Resolved") {
+          statusCounts.resolved++;
+        }
+
+        // Count risk levels
+        if (pothole.riskLevel === "High") {
+          riskCounts.high++;
+        } else if (pothole.riskLevel === "Medium") {
+          riskCounts.medium++;
+        } else if (pothole.riskLevel === "Low") {
+          riskCounts.low++;
+        }
+      });
+
+      setStatusData([statusCounts.underReview, statusCounts.inProgress, statusCounts.resolved]);
+      setRiskData(riskCounts);
+      setTotalPotholes(potholeData.length);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <>
@@ -34,32 +75,14 @@ const Dashboard = () => {
               </CardContent>
             </Card>
             <Card>
-              <CardContent>
-                <h3 className="text-xl font-bold mb-2">
+              <CardContent className='flex'>
+                <h3 className="text-xl font-bold pt-4 my-2">
                   Total Potholes Reported:{" "}
-                  <span className="text-blue-600 text-3xl">100</span>
+                  <span className="text-blue-600 text-3xl">{totalPotholes}</span>
                 </h3>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent>
-                <h3 className="text-lg font-semibold mb-2">Risk Assessment</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>High Risk Case</span>
-                    <span className="text-red-500">{riskData.high}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Medium Risk</span>
-                    <span className="text-yellow-500">{riskData.medium}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Low Risk</span>
-                    <span className="text-green-500">{riskData.low}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            
           </div>
         </div>
       </div>

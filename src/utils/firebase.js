@@ -1,5 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 const firebaseConfig = {
   apiKey: "AIzaSyBLV16RuHfFJN0NMtmY_n1E31oNLOLNxWs",
   authDomain: "pothole-s8.firebaseapp.com",
@@ -12,5 +14,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const storage = getStorage(app);
+const firestore = getFirestore(app);
 
-export { auth };
+export { auth, firestore, storage };
+
