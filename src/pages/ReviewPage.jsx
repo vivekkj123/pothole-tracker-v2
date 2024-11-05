@@ -1,40 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import { MapPin } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { MapPin } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-    collection,
-    doc,
-    onSnapshot,
-    query,
-    updateDoc,
+  collection,
+  doc,
+  onSnapshot,
+  query,
+  updateDoc,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Navbar from "../components/Navbar";
 import { auth, firestore, storage } from "../utils/firebase";
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -45,10 +45,18 @@ L.Icon.Default.mergeOptions({
 });
 
 const MiniMap = ({ location }) => {
-  const [lat, lon] = location.split(',').map(coord => parseFloat(coord.trim()));
-  
+  const [lat, lon] = location
+    .split(",")
+    .map((coord) => parseFloat(coord.trim()));
+
   return (
-    <MapContainer center={[lat, lon]} zoom={40} style={{ height: '100px', width: '100px' }} attributionControl={false} zoomControl={false}>
+    <MapContainer
+      center={[lat, lon]}
+      zoom={40}
+      style={{ height: "100px", width: "100px" }}
+      attributionControl={false}
+      zoomControl={false}
+    >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -62,6 +70,7 @@ const ReviewPage = () => {
   const [user] = useAuthState(auth);
   const [potholes, setPotholes] = useState([]);
   const [error, setError] = useState(null);
+  const [sortOrder, setSortOrder] = useState("desc"); // 'asc' or 'desc'
 
   useEffect(() => {
     if (!user) return;
@@ -73,8 +82,17 @@ const ReviewPage = () => {
         const potholeData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
+          detectionCount: doc.data().detections?.length || 0,
         }));
-        setPotholes(potholeData);
+
+        // Sort by detection count
+        const sortedData = potholeData.sort((a, b) =>
+          sortOrder === "desc"
+            ? b.detectionCount - a.detectionCount
+            : a.detectionCount - b.detectionCount
+        );
+
+        setPotholes(sortedData);
       },
       (err) => {
         setError("Error fetching potholes: " + err.message);
@@ -82,7 +100,7 @@ const ReviewPage = () => {
     );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, sortOrder]);
 
   const handleStatusChange = async (potholeId, newStatus) => {
     try {
@@ -111,6 +129,16 @@ const ReviewPage = () => {
     }
   };
 
+  const toggleSortOrder = () => {
+    setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"));
+  };
+
+  // Calculate counts for each status
+  const statusCounts = potholes.reduce((acc, pothole) => {
+    acc[pothole.status] = (acc[pothole.status] || 0) + 1;
+    return acc;
+  }, {});
+
   if (!user) {
     return (
       <Alert>
@@ -123,18 +151,46 @@ const ReviewPage = () => {
     <>
       <Navbar />
       <div className="my-10 container mx-auto p-4 bg-gray-50">
-        <h1 className="text-2xl font-bold mb-4 text-blue-600">Review Reported Potholes</h1>
+        <h1 className="text-2xl font-bold mb-4 text-blue-600">
+          Review Reported Potholes
+        </h1>
+
+        {/* Status Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {Object.entries(statusCounts).map(([status, count]) => (
+            <div
+              key={status}
+              className="bg-white p-4 rounded-lg shadow border border-blue-200"
+            >
+              <h3 className="text-lg font-semibold text-blue-600">{status}</h3>
+              <p className="text-3xl font-bold">{count}</p>
+              <p className="text-sm text-gray-500">potholes</p>
+            </div>
+          ))}
+        </div>
+
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
         <div className="overflow-x-auto">
+          <div className="mb-4">
+            <Button
+              onClick={toggleSortOrder}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Sort by Detections {sortOrder === "desc" ? "↓" : "↑"}
+            </Button>
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow className="bg-blue-100">
                 <TableHead className="text-blue-600">Location</TableHead>
                 <TableHead className="text-blue-600">Reported Image</TableHead>
+                <TableHead className="text-blue-600">Detections</TableHead>
                 <TableHead className="text-blue-600">Reported Date</TableHead>
                 <TableHead className="text-blue-600">Status</TableHead>
                 <TableHead className="text-blue-600">Action</TableHead>
@@ -153,15 +209,24 @@ const ReviewPage = () => {
                   </TableCell>
                   <TableCell>
                     <div className="w-24 h-24 relative overflow-hidden rounded-md border border-blue-300">
-                      <img 
-                        src={pothole.photoURL} 
+                      <img
+                        src={pothole.photoURL}
                         alt="Reported pothole"
                         className="w-full h-full object-cover"
                       />
                     </div>
                   </TableCell>
                   <TableCell>
-                    {new Date(pothole.reportedDate.toDate()).toLocaleDateString()}
+                    <div className="text-center">
+                      <span className="text-lg font-bold">
+                        {pothole.detectionCount}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(
+                      pothole.reportedDate.toDate()
+                    ).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
                     <Select
@@ -174,7 +239,9 @@ const ReviewPage = () => {
                         <SelectValue placeholder={pothole.status} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Under Review">Under Review</SelectItem>
+                        <SelectItem value="Under Review">
+                          Under Review
+                        </SelectItem>
                         <SelectItem value="In Progress">In Progress</SelectItem>
                         <SelectItem value="Resolved">Resolved</SelectItem>
                       </SelectContent>

@@ -194,7 +194,6 @@ const ReportPotholeModal = ({ isOpen, onClose }) => {
         detections,
         status: "Under Review",
         reportedDate: serverTimestamp(),
-        accuracy: location.accuracy, // Store location accuracy if available
       });
 
       onClose();
