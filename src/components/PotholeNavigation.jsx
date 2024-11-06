@@ -16,6 +16,7 @@ import L from "leaflet";
 import "leaflet-routing-machine";
 import { Search, MapPin, Loader2 } from "lucide-react";
 import _ from 'lodash';
+import Navbar from "./Navbar";
 
 // Format date helper function
 const formatDate = (timestamp) => {
@@ -306,7 +307,8 @@ const PotholeNavigation = () => {
   
     return (
       <div className="flex flex-col h-screen">
-        <div className="p-4 bg-white shadow-md z-10">
+        <Navbar/>
+        <div className="p-4 bg-cyan-50 shadow-md z-10">
           <div className="flex flex-col md:flex-row gap-4">
             <LocationSearch
               label="From"

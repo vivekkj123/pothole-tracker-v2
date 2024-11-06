@@ -94,6 +94,9 @@ const NavLinks = ({ user, handleSignOut, openReportModal, mobile = false }) => (
       </Link>
     )}
 
+<Link to="/navigation" className={`text-blue-600 ${mobile ? "block" : ""}`}>
+      Navigation Map
+    </Link>
     <Link to="/review" className={`text-blue-600 ${mobile ? "block" : ""}`}>
       Review
     </Link>
