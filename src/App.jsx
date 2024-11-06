@@ -9,12 +9,14 @@ import Dashboard from "./pages/Dashboard";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/Login";
 import ReviewPage from "./pages/ReviewPage";
+import PotholeNavigation from "./components/PotholeNavigation";
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/navigation" element={<PotholeNavigation />} />
         <Route path="/" element={<HomePage />} />
         <Route
           path="/dashboard"
