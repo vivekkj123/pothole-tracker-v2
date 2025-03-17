@@ -130,7 +130,7 @@ const ReportPotholeModal = ({ isOpen, onClose }) => {
       formData.append("image", file);
 
       const response = await fetch(
-        "https://pothole-noui-516848219617.asia-south1.run.app/detect",
+        "https://pothole-s81-16128562725.asia-southeast1.run.app/detect",
         {
           method: "POST",
           body: formData,
