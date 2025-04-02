@@ -28,7 +28,7 @@ const Navbar = () => {
       <div className="container mx-auto">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <img
+            {/* <img
               src="/emblem.svg"
               alt="Government of India Emblem"
               className="h-12"
@@ -38,7 +38,7 @@ const Navbar = () => {
                 Ministry of Road Transport and Highways
               </h1>
               <h2 className="text-lg">सड़क परिवहन और राजमार्ग मंत्रालय</h2>
-            </div>
+            </div> */}
           </div>
 
           <nav className="hidden md:flex items-center space-x-4">
